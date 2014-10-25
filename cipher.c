@@ -192,7 +192,7 @@ unsigned long calculateLCG_a(unsigned long LCG_m)
   {
   	lcg_a = 1+p;
   }
-  if (0 < lcg_a < lcg_m)
+  if (lcg_a < lcg_m)
   {
   	return lcg_a;
   }
@@ -231,7 +231,12 @@ unsigned long readPositiveLong(char delimiter)
 	int max = 0;
 	char temp[20];
 	int i = 0;
+	int j;
 	unsigned long n = 0;
+	for (j = 0; j < 20; j++)
+	{
+		temp[j] = 0;
+	}
 
 	char c = getchar();
 	while (c != ',')
@@ -276,9 +281,67 @@ int readKey(void)
 
 	lcg_x = lcg_c;
 
-  	return OK;
+	if (lcg_c <=0 || lcg_m <= 0 || lcg_a <= 0)
+	{
+		return ERROR;
+	}
+	else
+	{
+		return OK;
+	}
+  	
 }
+/***************************************************************************/
+/* buildMap(void)                                                          */
+/*                                                                         */
+/* Uses the global variables lcg_a, lcg_c, lcg_m and lcg_x to define the   */
+/*   global array: cipherMap[] such that cipherMap[i] = k indicates that   */
+/*   on encryption, bit i is moved to bit k and the reverse on decryption. */
+/*                                                                         */
+/* When this function returns, lcg_x will have been updated 28 steps       */
+/*   in the LCG.                                                           */
+/*                                                                         */
+/* This method does not return a value because there is no reason for it   */
+/*   to fail.                                                              */
+/***************************************************************************/
 
+
+void buildMap(void)
+{ 
+	int temp[27];
+	int gi[27];
+	int fi[27];
+	int free[27];
+	int i, k;
+	int j = lcg_c;
+	int m, p;
+	int count = 0;
+	int b;
+	for (m = 0; m < 28; m++)
+	{
+		temp[m]= 0;
+		gi[m]=0;
+		fi[m]=0;
+	}
+	temp[0] = j;
+
+	for (i = 1; i < 28; i++)
+	{
+		temp[i] = ((lcg_a * j) + lcg_c) % lcg_m;
+		j = temp[i];		
+	}
+	for (p = 0; p < 28; p++)
+	{
+		gi[p] = (temp[p] % (28-count));
+		count++;
+	}
+	for (k = 0; k < 28; k++)
+	{
+		fi[k] = free[gi[k]];
+	}
+
+
+}
 
 int main()
 { 
@@ -314,6 +377,7 @@ int main()
     {
       status = readDataBlock(data);
       if (DEBUG) printf("\treadDataBlock::data=%s status=%d\n",data,status);
+      buildMap();
     }
     if (status & ERROR)
     { 
