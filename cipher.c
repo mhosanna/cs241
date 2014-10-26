@@ -328,13 +328,14 @@ void buildMap(void)
 		fi[m]=0;
 		index[m]=0;
 	}
-	temp[0] = j;
 
-	for (i = 1; i < 28; i++)
-	{
-		temp[i] = ((lcg_a * j) + lcg_c) % lcg_m;
-		j = temp[i];		
+	temp[0] = lcg_x;
+	for (i = 1; i <= 28; i++)
+	{	
+		temp[i] = ((lcg_a * lcg_x) + lcg_c) % lcg_m;
+		lcg_x = temp[i];	
 	}
+
 	for (p = 0; p < 28; p++)
 	{
 		gi[p] = (temp[p] % (28-count));
@@ -358,6 +359,7 @@ void buildMap(void)
 	{
 		printf("%d ", cipherMap[b]);
 	}
+	// printf("\nLCG_X= %lu", lcg_x);
 }
 
 int main()
