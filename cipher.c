@@ -13,6 +13,7 @@ unsigned long lcg_c;
 unsigned long lcg_m;
 unsigned long lcg_a;
 unsigned long lcg_x;
+int cipherMap[MAP_LENGTH];
 
 int status;
 const int CLEAR = 0;
@@ -315,12 +316,11 @@ void buildMap(void)
 	int i, k;
 	int j = lcg_c;
 	int m, n, p;
-	int free = 0;
 	int used = 0;
 	int open =0;
 	int count = 0;
 	int b;
-	int x = 0;
+
 	for (m = 0; m < 28; m++)
 	{
 		temp[m]= 0;
@@ -340,7 +340,7 @@ void buildMap(void)
 		gi[p] = (temp[p] % (28-count));
 		count++;
 	}
-	for (k = 0; k <= 28; k++)
+	for (k = 0; k < 28; k++)
 	{
 		for(n = 0; n <= gi[k]+used; n++)
 		{
@@ -348,20 +348,16 @@ void buildMap(void)
 			{
 				used++;
 			}
-
 		}
 		open = gi[k] + used;
-		fi[k] = open;	
+		cipherMap[k] = open;	
 		index[open] = k+1;
 		used = 0;
 	}
-
 	for (b = 0; b < 28; b++)
 	{
-		printf("%d  ", fi[b]);
+		printf("%d ", cipherMap[b]);
 	}
-
-
 }
 
 int main()
@@ -396,9 +392,10 @@ int main()
 
     while (status == OK) 
     {
+    	buildMap();
       status = readDataBlock(data);
       if (DEBUG) printf("\treadDataBlock::data=%s status=%d\n",data,status);
-      buildMap();
+      
     }
     if (status & ERROR)
     { 
