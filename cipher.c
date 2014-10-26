@@ -311,17 +311,22 @@ void buildMap(void)
 	int temp[27];
 	int gi[27];
 	int fi[27];
-	int free[27];
+	int index[27];
 	int i, k;
 	int j = lcg_c;
-	int m, p;
+	int m, n, p;
+	int free = 0;
+	int used = 0;
+	int open =0;
 	int count = 0;
 	int b;
+	int x = 0;
 	for (m = 0; m < 28; m++)
 	{
 		temp[m]= 0;
 		gi[m]=0;
 		fi[m]=0;
+		index[m]=0;
 	}
 	temp[0] = j;
 
@@ -335,9 +340,25 @@ void buildMap(void)
 		gi[p] = (temp[p] % (28-count));
 		count++;
 	}
-	for (k = 0; k < 28; k++)
+	for (k = 0; k <= 28; k++)
 	{
-		fi[k] = free[gi[k]];
+		for(n = 0; n <= gi[k]+used; n++)
+		{
+			if (index[n] != 0) 
+			{
+				used++;
+			}
+
+		}
+		open = gi[k] + used;
+		fi[k] = open;	
+		index[open] = k+1;
+		used = 0;
+	}
+
+	for (b = 0; b < 28; b++)
+	{
+		printf("%d  ", fi[b]);
 	}
 
 
