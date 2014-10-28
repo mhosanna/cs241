@@ -314,7 +314,6 @@ void buildMap(void)
 	int fi[27];
 	int index[27];
 	int i, k;
-	int j = lcg_c;
 	int m, n, p;
 	int used = 0;
 	int open =0;
@@ -355,11 +354,41 @@ void buildMap(void)
 		index[open] = k+1;
 		used = 0;
 	}
-	for (b = 0; b < 28; b++)
-	{
-		printf("%d ", cipherMap[b]);
-	}
+	// for (b = 0; b < 28; b++)
+	// {
+	// 	printf("%d ", cipherMap[b]);
+	// }
 	// printf("\nLCG_X= %lu", lcg_x);
+}
+
+/*****************************************************************************/
+/* encrypt(char data[])                                                      */
+/*   Uses the global variable cipherMap to encrypt the data block in data[]. */
+/*   The encrypted data is sent to the standard output stream.               */
+/*   The encrypted data will always be 4 to 8 bytes long.                    */
+/*   Encrypted byte codes [0,31], 127 and '*' are converted to 2-byte        */
+/*     printable ASCII characters.                                           */
+/*                                                                           */
+/* Parameters: data[]: Must be a null terminated char[] of size 5.           */
+/*                                                                           */
+/* Return: OK | ERROR                                                        */
+/*****************************************************************************/
+
+int encrypt(char data[])
+{ 
+	char cipherText[28];
+	int binary[28];
+	int i, j;
+	int mask;
+    for(j = 0; j < 4; j++)
+    {
+
+    }
+
+	
+
+
+  return OK;
 }
 
 int main()
@@ -394,9 +423,14 @@ int main()
 
     while (status == OK) 
     {
-    	buildMap();
+      buildMap();
       status = readDataBlock(data);
       if (DEBUG) printf("\treadDataBlock::data=%s status=%d\n",data,status);
+      if ((status & ERROR) == 0)
+      { 
+        encrypt(data);
+        //else status |= decrypt(data);
+      }
       
     }
     if (status & ERROR)
