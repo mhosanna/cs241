@@ -1,9 +1,20 @@
+/**********************************************************************/
+/* Madeline Hosanna                                                   */
+/* October 30, 2014                                                   */
+/* CS-241 Section 001                                                 */
+/*                                                                    */
+/* This program reads characters from standard input and determines   */
+/* cipher direction, key pair and data. For each valid line, the      */
+/* program uses the lejo cipher algorithm to either encrypt or        */
+/* decrpyt the data and sends the result to the output stream.        */
+/**********************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <stdlib.h> /* provides EXIT_SUCCESS */
 
-#define DEBUG 1
+#define DEBUG 0
 #define MAP_LENGTH 28
 
 enum cipherModeEnum {ENCRYPT, DECRYPT};
@@ -22,24 +33,6 @@ const int END_OF_LINE = 2;
 const int END_OF_FILE = 4;
 const int ERROR = 8;
 
-long productOfUniquePrimeFactors(unsigned long n)
-{
-	long test = 2;
-	long product = 1;
-	while (test <= n)
-	{
-		if (n % test == 0)
-		{
-			product *= test;
-			 while(n % test == 0)
-			 {
-				n /= test;
-			 }	
-		}
-		test++;
-	}
-	return product;
-}
 
 /**********************************************************************/
 /* skipToEndOfLine(void)                                              */
@@ -53,20 +46,57 @@ long productOfUniquePrimeFactors(unsigned long n)
 /**********************************************************************/
 void skipToEndOfLine(void)
 {
-	char c;
-	while (c != '\n' && c != EOF)
-	{
-		c = getchar();
-	}
-	if (c == '\n')
-	{
-		status = END_OF_LINE;
-	}
-	if (c == EOF)
-	{
-		status = END_OF_FILE;
-	}
+  char c;
+  while (c != '\n' && c != EOF)
+  {
+    c = getchar();
+  }
+  if (c == '\n')
+  {
+    status = END_OF_LINE;
+  }
+  if (c == EOF)
+  {
+    status = END_OF_FILE;
+  }
 }
+
+/***********************************************************************/
+/* readCipherMode(void)                                                */
+/*   Reads one character from the standard input stream.               */
+/*   Sets the global variable cipherMode to ENCRYPT or DECRYPT if the  */
+/*     character read is an 'e' or a 'd'.                              */
+/*                                                                     */
+/* Returns:                                                            */
+/*   OK if an 'e' or 'd' was read.                                     */
+/*   END_OF_LINE if '\n' was read.                                     */
+/*   END_OF_FILE if EOF was read.                                      */
+/*   otherwise ERROR.                                                  */
+/***********************************************************************/
+int readCipherMode(void)
+{ 
+  char c = getchar();
+  if (c == 'e')
+  {
+    cipherMode = ENCRYPT;
+  	return OK;
+  }
+  if (c == 'd')
+  {
+    cipherMode = DECRYPT;
+  	return OK;
+  }
+  if (c == '\n')
+  {
+  	return END_OF_LINE;
+  }
+  if (c == EOF)
+  {
+  	return END_OF_FILE;
+  }
+  else return ERROR;
+}
+
 /******************************************************************************/
 /*  readDataBlock(char data[])                                                */
 /*    Reads one block of cipher data from the standard input stream.          */
@@ -90,79 +120,107 @@ void skipToEndOfLine(void)
 /******************************************************************************/
 int readDataBlock(char data[])
 { 
-	int i, j;
-	char c;
-	for(i = 0; i <= 4; i++)
-	{
-		data[i] = '\0';
-	}
-
-	if (cipherMode == ENCRYPT)
-	{
-		for(j = 0; j < 4; j++) 
-		{
-			c = getchar();
-			if ((c < 32 || c > 126) && c != '\n')
-			{
-				return ERROR;
-			}
-			if (c == EOF)
-			{
-				return END_OF_FILE;
-			}
-			if (c == '\n')
-			{
-				return END_OF_LINE;
-			}
-			else 
-			{
-				data[j] = c;
-			}
-		}
-		return OK;
-	}
-	else 
-	{
-		return ERROR;
-	}
-
+  int i, j;
+  char next;
+  char c;
+  for(i = 0; i <= 4; i++)
+  {
+  	data[i] = '\0';
+  }
+  if (cipherMode == ENCRYPT)
+  {
+    for(j = 0; j < 4; j++) 
+	  {
+	    c = getchar();
+	    if ((c < 32 || c > 126) && c != '\n')
+	    {
+	      return ERROR;
+	    }
+	    if (c == EOF)
+	    {
+		    return END_OF_FILE;
+	    }
+	    if (c == '\n')
+	    {
+		    return END_OF_LINE;
+	    }
+	    else 
+	    {
+		    data[j] = c;
+	    }
+	  }
+	  return OK;
+  }
+  else if (cipherMode == DECRYPT)
+  {
+	  for(j = 0; j < 4; j++) 
+	  {
+	    c = getchar();
+	    if (c == EOF)
+	    {
+		    return END_OF_FILE;
+	    }
+	    if (c == '\n')
+	    {
+		    return END_OF_LINE;
+	    }
+	    if (c == '*')
+	    {
+		    next = getchar();
+		    if (next == '%')
+		    {
+		      data[j] = 127;
+		    }
+		    else if (next == '*')
+		    {
+		      data[j] = '*';
+		    }
+		    else
+		    {
+		      data[j] = (next - '?');
+    	  }
+	    }
+	    else 
+	    {
+	      data[j] = c;
+	    }
+	  }
+    return OK;
+  }
+  return OK;
 }
 
-/***********************************************************************/
-/* readCipherMode(void)                                                */
-/*   Reads one character from the standard input stream.               */
-/*   Sets the global variable cipherMode to ENCRYPT or DECRYPT if the  */
-/*     character read is an 'e' or a 'd'.                              */
-/*                                                                     */
-/* Returns:                                                            */
-/*   OK if an 'e' or 'd' was read.                                     */
-/*   END_OF_LINE if '\n' was read.                                     */
-/*   END_OF_FILE if EOF was read.                                      */
-/*   otherwise ERROR.                                                  */
-/***********************************************************************/
-int readCipherMode(void)
-{ 
-  	char c = getchar();
-  	if (c == 'e')
-  	{
-  		cipherMode = ENCRYPT;
-  		return OK;
-  	}
-  	if (c == 'd')
-  	{
-  		cipherMode = DECRYPT;
-  		return OK;
-  	}
-  	if (c == '\n')
-  	{
-  		return END_OF_LINE;
-  	}
-  	if (c == EOF)
-  	{
-  		return END_OF_FILE;
-  	}
-  	else return ERROR;
+/**********************************************************************/
+/* productOfUniquePrimeFactors(unsigned long n)                       */
+/* Helper function that finds the product of the parameter's          */
+/* unique prime factors. This function is called by the               */
+/* calculateLCG_a(unsigned long LCG_m) function in order to calculate */
+/* the global variable value lcg_a.                                   */
+/*                                                                    */
+/* Parameters:                                                        */
+/*   unsigned long integer global variable lcg_m                      */
+/*                                                                    */
+/* Returns: Product for parameter's unique prime factors              */
+/**********************************************************************/
+long productOfUniquePrimeFactors(unsigned long n)
+{
+  long test = 2;
+  long product = 1;
+  while (test <= n)
+  {
+	  if (n % test == 0)
+	  {
+	    product *= test;
+	    while(n % test == 0)
+	    {
+		    n /= test;
+	    }	
+	  }
+	  test++;
+  }
+  return product;
 }
+
 /********************************************************************************/
 /*  calculateLCG_a(unsigned long LCG_m)                                         */
 /*    Given m of a Linear Congruential Generator (LCG): Xn+1 = (aXn + c) mod m  */
@@ -221,47 +279,40 @@ unsigned long calculateLCG_a(unsigned long LCG_m)
 /*    If no error, returns an unsigned long defined by the digits read.       */
 /*    If an error, returns 0.                                                 */
 /******************************************************************************/
-unsigned long getLongfromString(char *number)
-{
-  unsigned long n = strtol(number, NULL, 10);
-  return n;
-}
-
 unsigned long readPositiveLong(char delimiter)
 { 
-	int max = 0;
-	char temp[20];
-	int i = 0;
-	int j;
-	unsigned long n = 0;
-	for (j = 0; j < 20; j++)
-	{
-		temp[j] = 0;
-	}
+  int max = 20;
+  char temp[21];
+  int i = 0;
+  int j;
+  unsigned long n = 0;
+  for (j = 0; j < 21; j++)
+  {
+	  temp[j] = '\0';
+  }
 
-	char c = getchar();
-	while (c != ',')
-	{
-		if (max > 20)
-		{
-			return 0;
-		}
-		if (c >= '0' && c <= '9')
-		{
-			temp[i] = c;
-			i++;
-			max++;
-		}
-		else 
-		{
-			return 0;
-		}
-		c=getchar();
-	}
-	return n = getLongfromString(temp);  
+  char c = getchar();
+  while (c != ',')
+  {	
+	  if (c >= '0' && c <= '9')
+	  {
+	    temp[i] = c;
+	    i++;
+	  }
+	  else 
+	  {
+	    return 0;
+	  }
+	  c=getchar();
+  }
+
+  if (i > max) 
+  {
+	  return 0;
+  }
+
+  return n = strtoul(temp, NULL, 10);  
 }
-
-
 
 /****************************************************************/
 /* readKey(void)                                                */
@@ -275,23 +326,22 @@ unsigned long readPositiveLong(char delimiter)
 /****************************************************************/
 int readKey(void)
 {  
-	char delimiter = ',';
-	lcg_m = readPositiveLong(delimiter);
-	lcg_c = readPositiveLong(delimiter);
-	lcg_a = calculateLCG_a(lcg_m);
+  char delimiter = ',';
+  lcg_m = readPositiveLong(delimiter);
+  lcg_c = readPositiveLong(delimiter);
+  lcg_a = calculateLCG_a(lcg_m);
+  lcg_x = lcg_c;
 
-	lcg_x = lcg_c;
-
-	if (lcg_c <=0 || lcg_m <= 0 || lcg_a <= 0)
-	{
-		return ERROR;
-	}
-	else
-	{
-		return OK;
-	}
-  	
+  if (lcg_c <=0 || lcg_m <= 0 || lcg_a <= 0)
+  {
+	  return ERROR;
+  }
+  else
+  {
+	  return OK;
+  } 	
 }
+
 /***************************************************************************/
 /* buildMap(void)                                                          */
 /*                                                                         */
@@ -305,60 +355,59 @@ int readKey(void)
 /* This method does not return a value because there is no reason for it   */
 /*   to fail.                                                              */
 /***************************************************************************/
-
-
 void buildMap(void)
 { 
-	int temp[27];
-	int gi[27];
-	int fi[27];
-	int index[27];
-	int i, k;
-	int m, n, p;
-	int used = 0;
-	int open =0;
-	int count = 0;
-	int b;
+  unsigned long temp[29];
+  unsigned long gi[28];
+  int index[56];
+  int i, k;
+  int m, n, p;
+  int used = 0;
+  int open =0;
+  int count = 0;
+  int b;
 
-	for (m = 0; m < 28; m++)
-	{
-		temp[m]= 0;
-		gi[m]=0;
-		fi[m]=0;
-		index[m]=0;
-	}
-
-	temp[0] = lcg_x;
-	for (i = 1; i <= 28; i++)
-	{	
-		temp[i] = ((lcg_a * lcg_x) + lcg_c) % lcg_m;
-		lcg_x = temp[i];	
-	}
-
-	for (p = 0; p < 28; p++)
-	{
-		gi[p] = (temp[p] % (28-count));
-		count++;
-	}
-	for (k = 0; k < 28; k++)
-	{
-		for(n = 0; n <= gi[k]+used; n++)
-		{
-			if (index[n] != 0) 
-			{
-				used++;
-			}
-		}
-		open = gi[k] + used;
-		cipherMap[k] = open;	
-		index[open] = k+1;
-		used = 0;
-	}
-	// for (b = 0; b < 28; b++)
-	// {
-	// 	printf("%d ", cipherMap[b]);
-	// }
-	// printf("\nLCG_X= %lu", lcg_x);
+  for (m = 0; m < 28; m++)
+  {
+	  temp[m]= 0;
+	  gi[m]=0;
+  }
+  for (m = 0; m < 56; m++)
+  {
+	  index[m]=0;
+  }
+  temp[0] = lcg_x;
+  for (i = 1; i <= 28; i++)
+  {	
+	  temp[i] = ((lcg_a * lcg_x) + lcg_c) % lcg_m;
+	  lcg_x = temp[i];	
+  }
+  for (p = 0; p < 28; p++)
+  {
+	  gi[p] = (temp[p] % (28-count));
+	  count++;
+  }
+  for (k = 0; k < 28; k++)
+  {
+    for(n = 0; n <= gi[k]+used; n++)
+	  {
+	    if (index[n] != 0) 
+	    {
+		    used++;
+	    }
+	  }
+	  open = gi[k] + used;
+	  cipherMap[k] = open;	
+	  index[open] = k+1;
+	  used = 0;
+  }
+  if (DEBUG)
+  { 
+	  for (b = 0; b < 28; b++)
+	  {
+	    printf("%d ", cipherMap[b]);
+	  }
+  }
 }
 
 /*****************************************************************************/
@@ -373,23 +422,130 @@ void buildMap(void)
 /*                                                                           */
 /* Return: OK | ERROR                                                        */
 /*****************************************************************************/
-
 int encrypt(char data[])
 { 
-	char cipherText[28];
-	int binary[28];
-	int i, j;
-	int mask;
-    for(j = 0; j < 4; j++)
-    {
+  char cipher[4];
+  int i, j, k, m;
+  int flag = 0;
+  int byte;
+  int bit;
+  int c_byte;
+  int c_bit;
+  char printable;
 
-    }
+  for (i = 0; i < 4; i++)
+  {
+	  cipher[i] = '\0';
+  }
 
+  for(j = 0; j < 28; j++)
+  {
+	  byte = j / 7;
+	  bit = j % 7;
+
+	  if(data[byte] & (1<<bit))
+	  {
+	    c_byte = cipherMap[j] / 7;
+	    c_bit = cipherMap[j] % 7;
+	    cipher[c_byte] |= (1<<c_bit);
+	  }
+  }
 	
+  for(m = 0; m < 4; m++)
+  {
+	  if (data[m] != 0)
+	  {
+	    flag = 1;
+	  }
+  }
 
-
+  if(flag)
+  {
+    for(k = 0; k < 4; k++)
+    {
+	    if(cipher[k] < 32)
+      {
+	      printable = ('?' + cipher[k]);
+	      printf("*%c", printable);
+	    }
+	    else if(cipher[k] == 127)
+	    {
+	      printf("*");
+	      putchar('%');
+	    }
+	    else if (cipher[k] == '*')
+	    {
+	      printf("**");
+	    }
+	    else if (cipher[k] > 126)
+	    {
+	      printf("Error\n");
+	      skipToEndOfLine();
+	      return ERROR;
+	    }
+	    else printf("%c", cipher[k]);
+    }
+  }
+  else printf("");
   return OK;
 }
+
+/********************************************************************************/
+/* decrypt(char data[])                                                         */
+/*   Uses the global variable cipherMap to decrypt the data block in data[].    */
+/*   The decrypted data is sent to the standard output stream.                  */
+/*   The decrypted data will always be 1 to 4 bytes long.                       */
+/*   If a decrypted character is '\0' it means that the data block was a        */
+/*     parcial block from the end of the line. '\0' characters are not printed. */
+/*   Any other decrypted byte that is not a printable ASCII character is an     */
+/*     error.                                                                   */
+/*                                                                              */
+/* Parameters: data[]: Must be a null terminated char[] of size 5.              */
+/*                                                                              */
+/* Return: OK | ERROR                                                           */
+/********************************************************************************/
+int decrypt(char data[])
+{ 
+  char plain_text[4];
+  int i, j, k;
+  int byte;
+  int bit;
+  int d_byte;
+  int d_bit;
+  char printable;
+
+  for (i = 0; i < 4; i++)
+  {
+    plain_text[i] = '\0';
+  }
+  for(j = 0; j < 28; j++)
+  {
+	  byte = cipherMap[j] / 7;
+	  bit = cipherMap[j] % 7;
+
+	  if(data[byte] & (1<<bit))
+	  {
+	    d_byte = j / 7;
+	    d_bit = j % 7;
+	    plain_text[d_byte] |= (1<<d_bit);
+	  }
+  }
+
+  for(k = 0; k < 4; k++)
+  {
+    if(plain_text[k] == '\0')
+	  {
+	    printf("");
+	  }
+	  else if(plain_text[k] > 127 || plain_text[k] < 32)
+	  {
+	    return ERROR;
+	  }
+	  else printf("%c", plain_text[k]);
+  }
+  return OK;
+}
+
 
 int main()
 { 
@@ -428,8 +584,8 @@ int main()
       if (DEBUG) printf("\treadDataBlock::data=%s status=%d\n",data,status);
       if ((status & ERROR) == 0)
       { 
-        encrypt(data);
-        //else status |= decrypt(data);
+        if (cipherMode == ENCRYPT) status |= encrypt(data);
+        else status |= decrypt(data);
       }
       
     }
@@ -439,6 +595,6 @@ int main()
       skipToEndOfLine();
     }
     else puts("");
-}
+  }
   return EXIT_SUCCESS;
 }
